@@ -33,25 +33,17 @@
         p {
             margin: 10px 0;
         }
-        .cta {
-            background: #4caf50;
-            color: #ffffff;
-            padding: 10px 20px;
-            font-size: 1em;
-            border: none;
-            border-radius: 5px;
+        .link {
+            color: #4caf50;
+            text-decoration: underline;
             cursor: pointer;
-            text-transform: uppercase;
-            margin-top: 20px;
-        }
-        .cta:hover {
-            background: #388e3c;
         }
     </style>
 </head>
 <body>
     <h1 id="status-heading">🔄 Validating pal.al Short Link</h1>
     <p id="status-message" class="validating">Please wait while we validate the short link...</p>
+    <p id="redirect-info"></p>
 
     <script>
         async function fetchShortLinkData() {
@@ -70,6 +62,7 @@
         const failedUrl = window.location.pathname.substring(1); // Removes the leading '/'
         const statusMessage = document.getElementById('status-message');
         const statusHeading = document.getElementById('status-heading');
+        const redirectInfo = document.getElementById('redirect-info');
 
         if (failedUrl) {
             fetchShortLinkData().then(async urlMap => {
@@ -79,27 +72,36 @@
                     statusMessage.className = 'validated';
                     statusHeading.textContent = '🌟 pal.al Short Link Found';
 
-                    statusMessage.textContent = `Redirecting to ${longUrl}`;
+                    let countdown = 3;
+                    redirectInfo.innerHTML = `Redirecting to <a class="link" href="${longUrl}">${longUrl}</a> in <span id="countdown">${countdown}</span> seconds. If not redirected, click the link.`;
+
+                    const interval = setInterval(() => {
+                        countdown--;
+                        document.getElementById('countdown').textContent = countdown;
+                        if (countdown <= 0) clearInterval(interval);
+                    }, 1000);
 
                     setTimeout(() => {
                         window.location.href = longUrl;
-                    }, 5000);
+                    }, 3000);
                 } else {
                     statusMessage.textContent = '❌ Short URL not found. Redirecting to home...';
                     statusMessage.className = 'not-found';
                     statusHeading.textContent = '❗ Short Link Not Found';
+                    redirectInfo.innerHTML = `Redirecting to <a class="link" href="https://pat.al">home</a> in 3 seconds.`;
                     setTimeout(() => {
                         window.location.href = 'https://pat.al';
-                    }, 1000);
+                    }, 3000);
                 }
             });
         } else {
             statusMessage.textContent = '⚠️ No short URL alias provided. Redirecting to home...';
             statusMessage.className = 'not-found';
             statusHeading.textContent = '⚠️ Missing Short Link';
+            redirectInfo.innerHTML = `Redirecting to <a class="link" href="https://pat.al">home</a> in 3 seconds.`;
             setTimeout(() => {
                 window.location.href = 'https://pat.al';
-            }, 1upload000);
+            }, 3000);
         }
     </script>
 </body>
