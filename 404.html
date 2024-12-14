@@ -19,8 +19,16 @@
             height: 100vh;
         }
         h1 {
-            color: #4caf50;
             margin-bottom: 10px;
+        }
+        .validating {
+            color: #ffc107;
+        }
+        .validated {
+            color: #4caf50;
+        }
+        .not-found {
+            color: #f44336;
         }
         p {
             margin: 10px 0;
@@ -39,17 +47,11 @@
         .cta:hover {
             background: #388e3c;
         }
-        img {
-            max-width: 80%;
-            margin: 20px auto;
-            border: 2px solid #ffffff;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
-    <h1>🔗 Validating pal.al Short Link</h1>
-    <p id="status-message">Please wait while we validate the short link...</p>
+    <h1 id="status-heading">🔄 Validating pal.al Short Link</h1>
+    <p id="status-message" class="validating">Please wait while we validate the short link...</p>
 
     <script>
         async function fetchShortLinkData() {
@@ -67,41 +69,25 @@
 
         const failedUrl = window.location.pathname.substring(1); // Removes the leading '/'
         const statusMessage = document.getElementById('status-message');
+        const statusHeading = document.getElementById('status-heading');
 
         if (failedUrl) {
             fetchShortLinkData().then(async urlMap => {
                 const longUrl = urlMap[failedUrl];
                 if (longUrl) {
-                    try {
-                        const response = await fetch(longUrl);
-                        const htmlText = await response.text();
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(htmlText, 'text/html');
+                    statusMessage.textContent = '✅ Validated successfully!';
+                    statusMessage.className = 'validated';
+                    statusHeading.textContent = '🌟 pal.al Short Link Found';
 
-                        document.title = doc.querySelector('title')?.textContent || 'Redirecting';
+                    statusMessage.textContent = `Redirecting to ${longUrl}`;
 
-                        const firstImgSrc = doc.querySelector('img')?.src;
-                        if (firstImgSrc) {
-                            const img = document.createElement('img');
-                            img.src = firstImgSrc;
-                            img.alt = 'Preview Image';
-                            document.body.appendChild(img);
-                        }
-
-                        statusMessage.textContent = `🚀 Redirecting to ${longUrl}`;
-
-                        setTimeout(() => {
-                            window.location.href = longUrl;
-                        }, 5000);
-                    } catch (error) {
-                        console.error('Error processing the long URL:', error);
-                        statusMessage.textContent = '⚠️ Error loading the long URL. Redirecting to home...';
-                        setTimeout(() => {
-                            window.location.href = 'https://pat.al';
-                        }, 5000);
-                    }
+                    setTimeout(() => {
+                        window.location.href = longUrl;
+                    }, 5000);
                 } else {
                     statusMessage.textContent = '❌ Short URL not found. Redirecting to home...';
+                    statusMessage.className = 'not-found';
+                    statusHeading.textContent = '❗ Short Link Not Found';
                     setTimeout(() => {
                         window.location.href = 'https://pat.al';
                     }, 5000);
@@ -109,6 +95,8 @@
             });
         } else {
             statusMessage.textContent = '⚠️ No short URL alias provided. Redirecting to home...';
+            statusMessage.className = 'not-found';
+            statusHeading.textContent = '⚠️ Missing Short Link';
             setTimeout(() => {
                 window.location.href = 'https://pat.al';
             }, 5000);
