@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - URL Not Found</title>
+    <title>Validating pal.al Short Link</title>
     <style>
         body {
             margin: 0;
@@ -42,9 +42,8 @@
     </style>
 </head>
 <body>
-    <h1>Oops! Short URL Not Found</h1>
-    <p>We couldn't resolve the short URL you were looking for.</p>
-    <button class="cta" onclick="window.location.href='https://pat.al';">Go to Home</button>
+    <h1>Validating pal.al Short Link</h1>
+    <p>Please wait while we validate and redirect you to the long URL.</p>
 
     <script>
         // Function to fetch and parse the CSV data
@@ -65,10 +64,43 @@
         const failedUrl = window.location.pathname.substring(1); // Removes the leading '/'
 
         if (failedUrl) {
-            fetchShortLinkData().then(urlMap => {
+            fetchShortLinkData().then(async urlMap => {
                 const longUrl = urlMap[failedUrl];
                 if (longUrl) {
-                    window.location.href = longUrl;
+                    try {
+                        // Update the title of the page with the long URL title
+                        const response = await fetch(longUrl);
+                        const htmlText = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlText, 'text/html');
+                        document.title = doc.querySelector('title')?.textContent || 'Redirecting';
+
+                        // Display the first image from the long URL page
+                        const firstImgSrc = doc.querySelector('img')?.src;
+                        if (firstImgSrc) {
+                            const img = document.createElement('img');
+                            img.src = firstImgSrc;
+                            img.alt = 'Preview Image';
+                            img.style.maxWidth = '80%';
+                            img.style.margin = '20px auto';
+                            document.body.appendChild(img);
+                        }
+
+                        // Print redirection message
+                        const redirectMessage = document.createElement('p');
+                        redirectMessage.textContent = `Redirecting to ${longUrl}`;
+                        document.body.appendChild(redirectMessage);
+
+                        // Redirect to the long URL after a short delay
+                        setTimeout(() => {
+                            window.location.href = longUrl;
+                        }, 5000);
+                    } catch (error) {
+                        console.error('Error processing the long URL:', error);
+                        setTimeout(() => {
+                            window.location.href = 'https://pat.al';
+                        }, 5000);
+                    }
                 } else {
                     console.warn('Alias not found in the data. Redirecting to home.');
                     setTimeout(() => {
