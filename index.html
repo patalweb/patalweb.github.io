@@ -85,12 +85,35 @@
         <p><code>pat.al/yourlink</code></p>
 
         <p>Looking to promote your ideas or grow your business? Submit your links today and let Pat.al help you make an impact.</p>
-        <button class="cta" onclick="window.location.href='https://forms.gle/VL6ewsHPfzFg77bXA';">Submit Your Link</button>
+        <button class="cta" onclick="fetchAndRedirect();">Submit Your Link</button>
     </div>
 
     <footer>
         <p>© 2024 Pat.al | Built for the resilient and transformative.</p>
         <p><a href="mailto:contact@pat.al">Contact Us</a></p>
     </footer>
+
+    <script>
+        function fetchAndRedirect() {
+            var csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdLpI663e0WnQ0-WO6nt71pDWG1Myd9PN5p56IfBa_q-KBDWD9XilcUmOxaCiyHPEy8LVvjOSzL81J/pub?gid=982628430&single=true&output=csv';
+
+            fetch(csvUrl)
+                .then(response => response.text())
+                .then(data => {
+                    var lines = data.split('\n');
+                    var firstRow = lines[1]; // Assuming the CSV format: date,url,code in each row
+                    var shortUrl = firstRow.split(',')[1]; // The second column is the URL
+                    if (shortUrl) {
+                        window.location.href = shortUrl; // Redirect to the short URL
+                    } else {
+                        alert('Invalid or empty URL found in the CSV.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching the CSV:', error);
+                    alert('Error fetching the link data. Please try again later.');
+                });
+        }
+    </script>
 </body>
 </html>
